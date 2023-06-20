@@ -10,6 +10,14 @@ public class Weapon : MonoBehaviour
     public int count;
     public float speed;    // 회전 속도
 
+    float timer;
+    Player player;
+
+    void Awake()
+    {
+        player = GetComponentInParent<Player>();
+    }
+
     void Start()
     {
         Init();
@@ -23,12 +31,18 @@ public class Weapon : MonoBehaviour
                 transform.Rotate(Vector3.back * speed * Time.deltaTime);
                 break;
             default:
+                timer += Time.deltaTime;
+                if(timer > speed)
+                {
+                    timer = 0;
+                    Fire();
+                }
                 break;
         }
 
         if(Input.GetButtonDown("Jump"))
         {
-            LevelUp(20f, 5);         // 레벨업하면 대미지가 20으로 증가
+            LevelUp(10f, 1);         // 레벨업하면 대미지가 10으로 증가
         }
     }
 
@@ -48,10 +62,11 @@ public class Weapon : MonoBehaviour
         switch(id)
         {
             case 0:
-                speed = 150f;
+                speed = 150f;        // 근거리 무기인 경우 플레이어를 회전하는 속도로 설정
                 Batch();
                 break;
             default:
+                speed = 0.3f;        // 원거리 무기인 경우 연사 쿨타임으로 설정
                 break;
         }
     }
@@ -79,7 +94,24 @@ public class Weapon : MonoBehaviour
             Vector3 rotVec = Vector3.forward * 360 * i / count;    // 생성한 bullet 갯수에 따라 i번째 인덱스의 회전값 결정, 0번이면 0도 -> 1번이면 30도, 이런 식으로...
             bullet.Rotate(rotVec);
             bullet.Translate(bullet.up * 1.5f, Space.World);       // localPosition 대비 위치를 (0, 1.5)만큼 이동
-            bullet.GetComponent<Bullet>().Init(damage, -1);        // -1이면 무한 관통
+            bullet.GetComponent<Bullet>().Init(damage, -1, Vector3.zero);        // -1이면 무한 관통
         }
+    }
+
+    void Fire()
+    {
+        if(!player.scanner.nearestTarget)
+        {
+            return;
+        }
+
+        Vector3 targetPos = player.scanner.nearestTarget.position;
+        Vector3 dir = targetPos - transform.position;
+        dir = dir.normalized;
+
+        Transform bullet = GameManager.instance.pool.Get(prefabID).transform;
+        bullet.position = transform.position;
+        bullet.rotation = Quaternion.FromToRotation(Vector3.up, dir);   // 목표 지점을 향해 회전
+        bullet.GetComponent<Bullet>().Init(damage, count, dir);
     }
 }

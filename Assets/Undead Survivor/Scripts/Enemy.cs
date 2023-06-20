@@ -12,20 +12,24 @@ public class Enemy : MonoBehaviour
 
     bool isLive;
     Rigidbody2D rigid;
+    Collider2D coll;
     SpriteRenderer spriter;
     Animator anim;
+    WaitForFixedUpdate wait;
 
     void Awake()
     {
         rigid = GetComponent<Rigidbody2D>();
+        coll = GetComponent<Collider2D>();
         spriter = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
+        wait = new WaitForFixedUpdate();
     }
 
 
     void FixedUpdate()
     {
-        if(!isLive)
+        if(!isLive || anim.GetCurrentAnimatorStateInfo(0).IsName("Hit"))    // 애니메이션 상태가 Hit면 움직임 막음
         {
             return;
         }
@@ -51,6 +55,10 @@ public class Enemy : MonoBehaviour
     {
         target = GameManager.instance.player.GetComponent<Rigidbody2D>();
         isLive = true;
+        coll.enabled = true;
+        rigid.simulated = true;
+        spriter.sortingOrder = 2;
+        anim.SetBool("Dead", false);
         health = maxHealth;
     }
 
@@ -64,23 +72,38 @@ public class Enemy : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if(!collision.CompareTag("Bullet"))
+        if(!collision.CompareTag("Bullet") || !isLive)
         {
             return;
         }
 
         health -= collision.GetComponent<Bullet>().damage;
+        StartCoroutine(KnockBack());
 
         if(health > 0)
         {
-
+            anim.SetTrigger("Hit");
         }
         else
         {
-            Dead();
+            isLive = false;
+            coll.enabled = false;
+            rigid.simulated = false;
+            spriter.sortingOrder = 1;
+            anim.SetBool("Dead", true);
+            GameManager.instance.kill++;
+            GameManager.instance.GetExp();
         }
     }
     
+    IEnumerator KnockBack()
+    {
+        yield return wait;  // 하나의 물리 프레임을 딜레이
+        Vector3 playerPos = GameManager.instance.player.transform.position;
+        Vector3 dirVec = transform.position - playerPos;
+        rigid.AddForce(dirVec.normalized * 3f, ForceMode2D.Impulse);
+    }
+
     void Dead()
     {
         gameObject.SetActive(false);
