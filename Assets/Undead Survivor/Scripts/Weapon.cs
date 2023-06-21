@@ -15,12 +15,7 @@ public class Weapon : MonoBehaviour
 
     void Awake()
     {
-        player = GetComponentInParent<Player>();
-    }
-
-    void Start()
-    {
-        Init();
+        player = GameManager.instance.player;
     }
 
     void Update()
@@ -55,10 +50,31 @@ public class Weapon : MonoBehaviour
         {
             Batch();
         }
+
+        player.BroadcastMessage("ApplyGear", SendMessageOptions.DontRequireReceiver);  // 모든 자식 오브젝트에게 ApplyGear 함수 실행
     }
 
-    public void Init()
+
+    // 무기 생성 시 실행, 테스트용으로 무기 버튼으로 Init 함수를 부르고 있음
+    public void Init(ItemData data)
     {
+        name = "Weapon" + data.itemId;
+        transform.parent = player.transform;
+        transform.localPosition = Vector3.zero;
+
+        id = data.itemId;
+        damage = data.baseDamage;
+        count = data.baseCount;
+
+        for(int i = 0; i < GameManager.instance.pool.prefabs.Length; i++)
+        {
+            if(data.projectile == GameManager.instance.pool.prefabs[i])
+            {
+                prefabID = i;
+                break;
+            }
+        }
+
         switch(id)
         {
             case 0:
@@ -69,6 +85,13 @@ public class Weapon : MonoBehaviour
                 speed = 0.3f;        // 원거리 무기인 경우 연사 쿨타임으로 설정
                 break;
         }
+
+        // 각 손에 맞는 무기를 획득하면 해당하는 손을 활성화
+        Hand hand = player.hands[(int)data.itemType];
+        hand.spriter.sprite = data.hand;
+        hand.gameObject.SetActive(true);
+
+        player.BroadcastMessage("ApplyGear", SendMessageOptions.DontRequireReceiver);  // 모든 자식 오브젝트에게 ApplyGear 함수 실행
     }
 
     void Batch()
