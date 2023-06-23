@@ -25,12 +25,20 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        if(!GameManager.instance.isLive)
+        {
+            return;
+        }
         inputVec.x = Input.GetAxisRaw("Horizontal");
         inputVec.y = Input.GetAxisRaw("Vertical");
     }
 
     void FixedUpdate()
     {
+        if (!GameManager.instance.isLive)
+        {
+            return;
+        }
         Vector2 nextVec = inputVec.normalized * speed * Time.fixedDeltaTime;
         rigid.MovePosition(rigid.position + nextVec);
     }
@@ -43,11 +51,36 @@ public class Player : MonoBehaviour
 
     void LateUpdate()
     {
+        if (!GameManager.instance.isLive)
+        {
+            return;
+        }
         anim.SetFloat("Speed", inputVec.magnitude);
 
         if(inputVec.x != 0)
         {
             spriter.flipX = inputVec.x < 0;
+        }
+    }
+
+    void OnCollisionStay2D(Collision2D collision)
+    {
+        if(!GameManager.instance.isLive)
+        {
+            return;
+        }
+
+        GameManager.instance.health -= Time.deltaTime * 10;  // 프레임마다 체력이 깎이는 것을 방지
+
+        if(GameManager.instance.health < 0)
+        {
+            for(int i = 2; i < transform.childCount; i++)
+            {
+                transform.GetChild(i).gameObject.SetActive(false);   // 플레이어가 죽으면 필요없는 자식 오브젝트는 비활성화
+            }
+
+            anim.SetTrigger("Dead");
+            GameManager.instance.GameOver();
         }
     }
 }
