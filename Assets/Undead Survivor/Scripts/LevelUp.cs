@@ -26,6 +26,8 @@ public class LevelUp : MonoBehaviour
             return;
         }
 
+        AudioManager.instance.PlaySfx(AudioManager.Sfx.LevelUp);
+        AudioManager.instance.EffectBgm(true);
         Next();
     }
 
@@ -34,6 +36,8 @@ public class LevelUp : MonoBehaviour
         //rect.localScale = Vector3.zero;
         this.gameObject.SetActive(false);   // 위 코드를 대체
         GameManager.instance.Resume();
+        AudioManager.instance.PlaySfx(AudioManager.Sfx.Select);
+        AudioManager.instance.EffectBgm(false);
     }
 
     // 게임 시작할 때 기본 무기 지급

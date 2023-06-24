@@ -19,7 +19,7 @@ public class Bullet : MonoBehaviour
         this.damage = damage;
         this.per = per;
 
-        if(per > -1)    // 관통하지 않는 원거리 무기에만 방향 부여
+        if(per >= 0 )    // 관통하지 않는 원거리 무기에만 방향 부여
         {
             rigid.velocity = dir * 15f;    // 적의 방향으로 날아갈 속도
         }
@@ -27,17 +27,28 @@ public class Bullet : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if(!collision.CompareTag("Enemy") || per == -1)
+        if(!collision.CompareTag("Enemy") || per == -100)
         {
             return;
         }
 
         per--;
 
-        if(per == -1)
+        if(per < 0)
         {
             rigid.velocity = Vector2.zero;
             gameObject.SetActive(false);
         }
+    }
+
+    void OnTriggerExit2D(Collider2D collision)
+    {
+        if (!collision.CompareTag("Area") || per == -100)
+        {
+            return;
+        }
+
+        // 플레이어 영역에서 나가면 총알 비활성화
+        gameObject.SetActive(false);
     }
 }

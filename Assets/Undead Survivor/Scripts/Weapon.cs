@@ -48,8 +48,8 @@ public class Weapon : MonoBehaviour
 
     public void LevelUp(float damage, int count)
     {
-        this.damage = damage;
-        this.count += count;      // bullet 숫자를 count만큼 증가
+        this.damage = damage * Character.Damage;
+        this.count += count + Character.Count;      // bullet 숫자를 count만큼 증가
 
         if(id == 0)
         {
@@ -68,8 +68,8 @@ public class Weapon : MonoBehaviour
         transform.localPosition = Vector3.zero;
 
         id = data.itemId;
-        damage = data.baseDamage;
-        count = data.baseCount;
+        damage = data.baseDamage * Character.Damage;
+        count = data.baseCount + Character.Count;
 
         for(int i = 0; i < GameManager.instance.pool.prefabs.Length; i++)
         {
@@ -83,11 +83,11 @@ public class Weapon : MonoBehaviour
         switch(id)
         {
             case 0:
-                speed = 150f;        // 근거리 무기인 경우 플레이어를 회전하는 속도로 설정
+                speed = 150f * Character.WeaponSpeed;        // 근거리 무기인 경우 플레이어를 회전하는 속도로 설정
                 Batch();
                 break;
             default:
-                speed = 0.3f;        // 원거리 무기인 경우 연사 쿨타임으로 설정
+                speed = 0.3f * Character.WeaponRate;        // 원거리 무기인 경우 연사 쿨타임으로 설정
                 break;
         }
 
@@ -122,7 +122,7 @@ public class Weapon : MonoBehaviour
             Vector3 rotVec = Vector3.forward * 360 * i / count;    // 생성한 bullet 갯수에 따라 i번째 인덱스의 회전값 결정, 0번이면 0도 -> 1번이면 30도, 이런 식으로...
             bullet.Rotate(rotVec);
             bullet.Translate(bullet.up * 1.5f, Space.World);       // localPosition 대비 위치를 (0, 1.5)만큼 이동
-            bullet.GetComponent<Bullet>().Init(damage, -1, Vector3.zero);        // -1이면 무한 관통
+            bullet.GetComponent<Bullet>().Init(damage, -100, Vector3.zero);        // -100이면 무한 관통
         }
     }
 
@@ -141,5 +141,7 @@ public class Weapon : MonoBehaviour
         bullet.position = transform.position;
         bullet.rotation = Quaternion.FromToRotation(Vector3.up, dir);   // 목표 지점을 향해 회전
         bullet.GetComponent<Bullet>().Init(damage, count, dir);
+
+        AudioManager.instance.PlaySfx(AudioManager.Sfx.Range);
     }
 }
