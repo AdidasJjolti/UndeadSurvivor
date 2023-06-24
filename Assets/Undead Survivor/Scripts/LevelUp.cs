@@ -6,6 +6,7 @@ public class LevelUp : MonoBehaviour
 {
     RectTransform rect;
     Item[] items;
+    bool _isFirst;
 
     void Awake()
     {
@@ -15,17 +16,27 @@ public class LevelUp : MonoBehaviour
 
     public void Show()
     {
-        Next();
-        rect.localScale = Vector3.one;
+        // rect.localScale = Vector3.one;
+        this.gameObject.SetActive(true);   // 위 코드를 대체
         GameManager.instance.Stop();
+
+        if (!_isFirst)
+        {
+            _isFirst = true;
+            return;
+        }
+
+        Next();
     }
 
     public void Hide()
     {
-        rect.localScale = Vector3.zero;
+        //rect.localScale = Vector3.zero;
+        this.gameObject.SetActive(false);   // 위 코드를 대체
         GameManager.instance.Resume();
     }
 
+    // 게임 시작할 때 기본 무기 지급
     public void Select(int index)
     {
         items[index].OnClick();

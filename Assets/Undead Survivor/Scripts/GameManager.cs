@@ -25,18 +25,25 @@ public class GameManager : MonoBehaviour
     public int level;
     public int kill;
     public int exp;
-    public int[] nextExp = {3, 5, 10, 100, 150, 210 ,280, 360, 450, 600};
+    public int[] nextExp = { 3, 5, 10, 100, 150, 210, 280, 360, 450, 600 };
 
     void Awake()
     {
         instance = this;
         maxGameTime = 20f;
+        if (uiLevelUp == null)
+        {
+            uiLevelUp = GameObject.Find("Canvas").transform.Find("LevelUp").GetComponent<LevelUp>();
+        }
     }
+
 
     public void GameStart()
     {
         health = maxHealth;
-        uiLevelUp.Select(0);   //임시 스크립트 : 게임 시작 시 onclick이벤트로 기본 무기 지급
+        uiLevelUp.Show();
+        uiLevelUp.Select(0);   //임시 스크립트 : 게임 시작 시 onclick 이벤트로 기본 무기 지급
+        uiLevelUp.Hide();
         Resume();
     }
 
@@ -76,13 +83,13 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if(!isLive)
+        if (!isLive)
         {
             return;
         }
 
         gameTime = gameTime + Time.deltaTime;
-        if(gameTime > maxGameTime)
+        if (gameTime > maxGameTime)
         {
             gameTime = maxGameTime;
             GameVictory();
@@ -91,16 +98,22 @@ public class GameManager : MonoBehaviour
 
     public void GetExp()
     {
-        if(!isLive)
+        if (!isLive)
         {
             return;
         }
         exp++;
 
-        if(exp == nextExp[Mathf.Min(level, nextExp.Length - 1)])    // 최고 경험치 구간에 도달하면 거기까지만 보여주기
+        if (exp == nextExp[Mathf.Min(level, nextExp.Length - 1)])    // 최고 경험치 구간에 도달하면 거기까지만 보여주기
         {
             level++;
             exp = 0;
+
+            if (uiLevelUp == null)
+            {
+                uiLevelUp = GameObject.Find("Canvas").transform.Find("LevelUp").GetComponent<LevelUp>();
+            }
+
             uiLevelUp.Show();   // 아이템 고르는 팝업 오픈
         }
     }
