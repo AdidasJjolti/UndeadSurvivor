@@ -36,8 +36,8 @@ public class Player : MonoBehaviour
         {
             return;
         }
-        inputVec.x = Input.GetAxisRaw("Horizontal");
-        inputVec.y = Input.GetAxisRaw("Vertical");
+        //inputVec.x = Input.GetAxisRaw("Horizontal");
+        //inputVec.y = Input.GetAxisRaw("Vertical");
     }
 
     void FixedUpdate()
@@ -51,10 +51,10 @@ public class Player : MonoBehaviour
     }
 
     // InputSystem 패키지를 활용한 움직임 구현
-    //void OnMove(InputValue value)
-    //{
-    //    inputVec = value.Get<Vector2>();
-    //}
+    void OnMove(InputValue value)
+    {
+        inputVec = value.Get<Vector2>();
+    }
 
     void LateUpdate()
     {
